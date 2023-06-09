@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Products;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProductsRequest;
 use App\Http\Requests\UpdateProductsRequest;
@@ -12,10 +13,22 @@ class ProductsController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        // searching data
+        $search = $request->query('search');
+        if (!empty($search)) {
+           $dataProducts = Products::where('products.code_product', 'like', '%'. $search .'%')
+           ->orWhere('products.name', 'like', '%'. $search .'%')
+           ->paginate(10)->onEachSide(2)->fragment('prdct');
+        } else {
+            $dataProducts = Products::paginate(10)->onEachSide(2)->fragment('prdct');
+        }
+        
+        
         return view('products.data',[
-            'products' => Products::all()
+            'products' => $dataProducts,
+            'search' =>$search
         ]);
     }
 
